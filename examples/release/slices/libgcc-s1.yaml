@@ -1,0 +1,7 @@
+package: libgcc-s1
+
+slices:
+  bins:
+    contents:
+      /lib/x86_64-linux-gnu/libgcc_s.so.1:
+      /usr/share/lintian/overrides/libgcc-s1:
