@@ -1,9 +1,8 @@
 # first, build the "chisel" image with ../Dockerfile
 FROM chisel:latest as installer
-WORKDIR /opt
-RUN mkdir /opt/output/
-ADD ./release/ /opt/release/
-RUN chisel cut --release /opt/release/ --root /opt/output/ libc6.runtime
+WORKDIR /staging
+RUN [ "chisel", "cut", "--release", "ubuntu-22.04", \
+    "--root", "/staging/", "libc6_libs" ]
 
 FROM public.ecr.aws/lts/ubuntu:22.04 AS builder
 WORKDIR /app
@@ -12,6 +11,8 @@ RUN echo 'main(){printf("hello, world\\n");}' > hello.c
 RUN gcc -w hello.c -o ./hello-world
 
 FROM scratch
-COPY --from=installer ["/opt/output", "/"]
+COPY --from=installer [ "/staging/", "/" ]
 COPY --from=builder /app/hello-world /
-CMD ["/hello-world"]
+CMD [ "/hello-world" ]
+
+# docker run --rm -it $(docker build . -q -f helloworld.dockerfile)

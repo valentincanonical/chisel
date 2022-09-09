@@ -1,8 +1,0 @@
-package: base-files
-
-slices:
-  static:
-    contents:
-      /etc/debian_version:
-      /etc/os-release:
-      /usr/lib/os-release:

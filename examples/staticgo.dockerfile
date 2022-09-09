@@ -1,22 +1,18 @@
 # first, build the "chisel" image with ../Dockerfile
 FROM chisel:latest as installer
-WORKDIR /opt
-RUN mkdir /opt/output/
-ADD ./release/ /opt/release/
-RUN chisel cut --release /opt/release/ --root /opt/output/ base-files.static tzdata.static
+WORKDIR /staging
+RUN [ "chisel", "cut", "--release", "ubuntu-22.04", \
+    "--root", "/staging/", "ca-certificates_data" ]
 
-FROM public.ecr.aws/lts/ubuntu:22.04 AS source
-WORKDIR /tmp
-RUN apt-get update && apt-get install -y git
-RUN git clone https://github.com/go-training/helloworld.git
-
-FROM golang:1.17 as builder
+FROM public.ecr.aws/lts/ubuntu:22.04 as builder
+RUN apt-get update && apt-get install -y golang
 WORKDIR /go/src/app
-COPY --from=source ["/tmp/helloworld", "/go/src/app"]
-RUN go mod init
-RUN go build -o /go/bin/app
+ADD ./src/https.go /go/src/app
+RUN CGO_ENABLED=0 go build -a -ldflags="-extldflags=-static" https.go
 
 FROM scratch
-COPY --from=installer ["/opt/output", "/"]
-COPY --from=builder /go/bin/app /
-CMD ["/app"]
+COPY --from=installer [ "/staging/", "/" ]
+COPY --from=builder [ "/go/src/app/https", "/" ]
+CMD [ "/https" ]
+
+# docker run --rm -it $(docker build . -q -f staticgo.dockerfile)
