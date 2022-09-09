@@ -21,7 +21,7 @@ COPY --from=builder /build/chisel /usr/bin/
 ENTRYPOINT [ "/usr/bin/chisel" ]
 CMD [ "--help" ]
 
-# USAGE
+# USAGE (run from the host, not from the DevContainer)
 # docker build . -t chisel:latest
 # mkdir chiselled
 # docker run -v $(pwd)/chiselled:/opt/output --rm chisel cut --release ubuntu-22.04 --root /opt/output/ libc6_libs ca-certificates_data
