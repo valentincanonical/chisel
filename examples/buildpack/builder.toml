@@ -1,0 +1,17 @@
+# Buildpacks to include in builder
+[[buildpacks]]
+  uri = "docker://gcr.io/paketo-buildpacks/dotnet-core:0.23.2"
+  version = "0.23.2"
+
+[[order]]
+  [[order.group]]
+    id = "paketo-buildpacks/dotnet-core"
+    version = "0.23.2"
+
+# Stack that will be used by the builder
+[stack]
+id = "io.buildpacks.stacks.jammy"
+# This image is used at runtime
+run-image = "chiselled-ubuntu-dotnet6:22.04"
+# This image is used at build-time
+build-image = "ubuntu-dotnet6:22.04-builder"
