@@ -13,11 +13,10 @@ FROM public.ecr.aws/lts/ubuntu:${UBUNTU_RELEASE} as installer
 RUN apt-get update && apt-get install -y ca-certificates
 COPY --from=builder /build/chisel /usr/bin/
 WORKDIR /rootfs
-RUN chisel cut --root /rootfs libc6_libs ca-certificates_data
+RUN chisel cut --root /rootfs libc6_libs ca-certificates_data base-files_release-info
 
 # STAGE 3: Assemble the Chisel binary + its chiselled dependencies
 FROM scratch
-COPY --from=installer /etc/lsb-release /etc/lsb-release 
 COPY --from=installer ["/rootfs", "/"]
 COPY --from=builder /build/chisel /usr/bin/
 ENTRYPOINT [ "/usr/bin/chisel" ]
