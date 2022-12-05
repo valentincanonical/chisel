@@ -1,3 +1,5 @@
+ARG UBUNTU_RELEASE=22.04
+
 # STAGE 1: Build Chisel using the Golang SDK
 FROM golang:1.18 as builder
 RUN mkdir /build
@@ -7,22 +9,24 @@ RUN cd cmd && ./mkversion.sh
 RUN go build -o $(pwd) $(pwd)/cmd/chisel
 
 # STAGE 2: Create a Chiselled Ubuntu environment for Chisel to run
-FROM public.ecr.aws/lts/ubuntu:22.04 as installer
+FROM public.ecr.aws/lts/ubuntu:${UBUNTU_RELEASE} as installer
 RUN apt-get update && apt-get install -y ca-certificates
 COPY --from=builder /build/chisel /usr/bin/
-WORKDIR /opt
-RUN mkdir /opt/output/
-RUN chisel cut --root /opt/output/ libc6_libs ca-certificates_data
+WORKDIR /rootfs
+RUN chisel cut --root /rootfs libc6_libs ca-certificates_data
 
 # STAGE 3: Assemble the Chisel binary + its chiselled dependencies
 FROM scratch
-COPY --from=installer ["/opt/output", "/"]
+COPY --from=installer /etc/lsb-release /etc/lsb-release 
+COPY --from=installer ["/rootfs", "/"]
 COPY --from=builder /build/chisel /usr/bin/
 ENTRYPOINT [ "/usr/bin/chisel" ]
 CMD [ "--help" ]
 
-# USAGE (run from the host, not from the DevContainer)
+# *** BUILD (run from the host, not from the DevContainer) ***
 # docker build . -t chisel:latest
+#
+# *** USAGE ***
 # mkdir chiselled
 # docker run -v $(pwd)/chiselled:/opt/output --rm chisel cut --release ubuntu-22.04 --root /opt/output/ libc6_libs ca-certificates_data
 # ls -la ./chiselled

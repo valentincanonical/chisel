@@ -2,9 +2,13 @@
 
 ## With Dockerfiles
 
-### An Ubuntu Distroless base image
+### An Ubuntu Distroless base image (chiselled Ubuntu base image)
 
-See [the example Dockerfile](./distroless.dockerfile).
+See [the example Dockerfile](./chiselled-base.dockerfile).
+
+#### An Ubuntu Distroless base image with SSL support (chiselled Ubuntu SSL base image)
+
+See [the example Dockerfile](./chiselled-ssl-base.dockerfile).
 
 ### An Hello world application written in C and packed with chiselled Ubuntu
 

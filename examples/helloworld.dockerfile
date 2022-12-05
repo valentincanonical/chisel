@@ -1,10 +1,14 @@
+ARG UBUNTU_RELEASE=22.04
+
 # first, build the "chisel" image with ../Dockerfile
-FROM chisel:latest as installer
+# docker build .. --build-arg UBUNTU_RELEASE=22.04 -t chisel:22.04
+
+FROM chisel:${UBUNTU_RELEASE} as installer
 WORKDIR /staging
 RUN [ "chisel", "cut", "--release", "ubuntu-22.04", \
     "--root", "/staging/", "libc6_libs" ]
 
-FROM public.ecr.aws/lts/ubuntu:22.04 AS builder
+FROM public.ecr.aws/lts/ubuntu:${UBUNTU_RELEASE} AS builder
 WORKDIR /app
 RUN apt-get update && apt-get install -y gcc
 RUN echo 'main(){printf("hello, world\\n");}' > hello.c
