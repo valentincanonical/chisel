@@ -1,21 +1,21 @@
 ARG UBUNTU_RELEASE=22.04
 
 # STAGE 1: Build Chisel using the Golang SDK
-FROM golang:1.18 as builder
-RUN mkdir /build
-ADD . /build/
+FROM public.ecr.aws/lts/ubuntu:${UBUNTU_RELEASE} as builder
+RUN apt-get update && apt-get install -y golang dpkg-dev ca-certificates git
 WORKDIR /build/
+ADD . /build/
 RUN cd cmd && ./mkversion.sh
 RUN go build -o $(pwd) $(pwd)/cmd/chisel
 
-# STAGE 2: Create a Chiselled Ubuntu environment for Chisel to run
+# STAGE 2: Create a chiselled Ubuntu base to then ship the chisel binary
 FROM public.ecr.aws/lts/ubuntu:${UBUNTU_RELEASE} as installer
 RUN apt-get update && apt-get install -y ca-certificates
 COPY --from=builder /build/chisel /usr/bin/
 WORKDIR /rootfs
 RUN chisel cut --root /rootfs libc6_libs ca-certificates_data base-files_release-info
 
-# STAGE 3: Assemble the Chisel binary + its chiselled dependencies
+# STAGE 3: Assemble the chisel binary + its chiselled Ubuntu dependencies
 FROM scratch
 COPY --from=installer ["/rootfs", "/"]
 COPY --from=builder /build/chisel /usr/bin/
